@@ -1,0 +1,31 @@
+version: '1.0'
+
+networks:
+  k6:
+
+services:
+  k6:
+    image: loadimpact/k6:latest
+    networks:
+      - k6
+    ports:
+      - "6565:6565"
+    volumes:
+      - ./:/scripts
+    environment:
+      - K6_OUT=statsd
+      - K6_STATSD_ADDR=newrelic:8125
+      - MY_HOSTNAME=httpbin.test.k6.io
+    depends_on:
+      - newrelic
+
+  newrelic:
+    image: newrelic/nri-statsd:latest
+    networks:
+      - k6
+    environment:
+      - NR_ACCOUNT_ID=112233
+      - NR_API_KEY=112233
+      - statser-type=logging
+    ports:
+      - 8125:8125/udp
